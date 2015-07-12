@@ -16,9 +16,10 @@ Including another URLconf
 from django.conf.urls import include, url
 from django.contrib import admin
 import research_work.urls as research_urls
+import chat.urls as chat_urls
 
 urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
-	
-	url(r'^secret_research/', include(research_urls, namespace='research')),
+    url(r'^secret_research/', include(research_urls, namespace='research')),
+    url(r'^', include(chat_urls, namespace='chat')),
 ]

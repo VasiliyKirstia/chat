@@ -1,0 +1,241 @@
+{% load staticfiles %}
+
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Starter Template for Bootstrap</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="{% static 'bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'bootstrap/css/bootstrap-theme.min.css' %}" rel="stylesheet">
+
+    <script src="{% static 'scripts/jquery.min.js' %}"></script>
+    <script src="{% static 'bootstrap/js/bootstrap.min.js' %}"></script>
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+</head>
+
+<body>
+    <div class="navbar navbar-inverse navbar-static-top">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+            </div>
+            <div id="navbar" class="navbar-collapse collapse">
+                <ul class="nav navbar-nav">
+                    <li class="active">
+                        <a href="#">Чатик</a>
+                    </li>
+                </ul>
+                <div class="nav navbar-right">
+                    <div class="btn btn-group">
+                        <button class="btn btn-default" type="button" data-toggle="modal" data-target="#login-modal">
+                            <i class="glyphicon glyphicon-log-in"></i> вход
+                        </button>
+                        <button class="btn btn-default" type="button" data-toggle="modal" data-target="#register-modal">
+                            <i class="glyphicon glyphicon-user"></i> регистрация
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-3 col-md-3 col-sm-5 col-xs-6">
+                <ul class="list-group">
+                    <li class="list-group-item">
+                        <a href="#" data-toggle="modal" data-target="#conference-creation-modal">
+                            <i class="glyphicon glyphicon-comment"></i> Начать конференцию
+                        </a>
+                    </li>
+                    <li class="list-group-item">
+                        <a href="#" data-toggle="modal" data-target="#new-messages-modal">
+                            <i class="glyphicon glyphicon-envelope"></i> Новые сообщения <span class="badge">42</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <div class="col-lg-9 col-md-9 col-sm-7 col-xs-6">
+                <!-- Nav pills -->
+                <ul class="nav nav-pills nav-justified" role="tablist">
+                    <li role="presentation" class="active">
+                        <a href="#t1" aria-controls="home" role="tab" data-toggle="tab">
+                            Вкладка 1
+                        </a>
+                    </li>
+                    <li role="presentation">
+                        <a href="#t2" aria-controls="profile" role="tab" data-toggle="tab">
+                            Вкладка 2
+                        </a>
+                    </li>
+                    <li role="presentation">
+                        <a href="#t3" aria-controls="messages" role="tab" data-toggle="tab">
+                            Вкладка 3
+                        </a>
+                    </li>
+                    <li role="presentation">
+                        <a href="#t4" aria-controls="settings" role="tab" data-toggle="tab">
+                            Вкладка 4
+                        </a>
+                    </li>
+                </ul>
+                <!-- Tab panes -->
+                <div class="tab-content">
+                    <div role="tabpanel" class="tab-pane active" id="t1">
+                        <p>
+                            всем привет
+                        </p>
+                    </div>
+                    <div role="tabpanel" class="tab-pane" id="t2">
+                        <p>
+                            всем пока
+                        </p>
+                    </div>
+                    <div role="tabpanel" class="tab-pane" id="t3">
+                        <p>
+                            пока не всем
+                        </p>
+                    </div>
+                    <div role="tabpanel" class="tab-pane" id="t4">
+                        <p>
+                            не совсем привет
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="login-modal">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"><span>&times;</span>
+                    </button>
+                    <h4 class="modal-title">Вход на сайт</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <input type="text" class="form-control" placeholder="Логин">
+                        <br>
+                        <input type="password" class="form-control" placeholder="Палорь">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Отмена</button>
+                    <button type="button" class="btn btn-primary">Войти</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="register-modal">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"><span>&times;</span>
+                    </button>
+                    <h4 class="modal-title">Регистрация пользователя</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <input type="text" class="form-control" placeholder="Логин">
+                        <br>
+                        <input type="password" class="form-control" placeholder="Палорь">
+                        <br>
+                        <input type="password" class="form-control" placeholder="Повтор пароля">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Отмена</button>
+                    <button type="button" class="btn btn-primary">Зарегистрироваться</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal fade" id="conference-creation-modal">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"><span>&times;</span>
+                    </button>
+                    <h4 class="modal-title">Создание конференции</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <input type="text" class="form-control" placeholder="Участники конференции">
+                        <br>
+                        <input type="text" class="form-control" placeholder="Текст приглашения">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Отмена</button>
+                    <button type="button" class="btn btn-primary">Начать</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal fade" id="new-messages-modal">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"><span>&times;</span>
+                    </button>
+                    <h4 class="modal-title">Новые сообщения</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-info alert-dismissible" role="alert">
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                            <span class="badge">14</span> <strong>Приглашение</strong> Это текст приглоса.
+                    </div>
+                    <div class="alert alert-success alert-dismissible" role="alert">
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                            <span class="badge">1</span> <strong>Предупреждение</strong> Это текст Предупреждения.
+                    </div>
+                    <div class="alert alert-danger alert-dismissible" role="alert">
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                            <span class="badge">16</span> <strong>Ошибка</strong> Это текст ошибки.
+                    </div>
+                    <div class="alert alert-danger alert-dismissible" role="alert">
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                            <span class="badge">16</span> <strong>Ошибка</strong> Это текст ошибки.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Закрыть</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
