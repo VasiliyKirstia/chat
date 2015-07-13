@@ -19,13 +19,17 @@
 
     <script src="{% static 'scripts/jquery.min.js' %}"></script>
     <script src="{% static 'bootstrap/js/bootstrap.min.js' %}"></script>
-
+    
+    <!--Chosen-->
+    <script src="{% static 'plugins/chosen/chosen.jquery.min.js' %}"></script>
+    <link type="text/css" rel="stylesheet" href="{% static 'plugins/chosen/chosen.min.css' %}">
+    <link type="text/css" rel="stylesheet" href="{% static 'plugins/chosen/chosen-costom.css' %}">
+    
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
     <!--[if lt IE 9]>
       <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
       <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
     <![endif]-->
-
 </head>
 
 <body>
@@ -45,6 +49,7 @@
                     </li>
                 </ul>
                 <div class="nav navbar-right">
+                    {% if not user.is_authenticated %}
                     <div class="btn btn-group">
                         <button class="btn btn-default" type="button" data-toggle="modal" data-target="#login-modal">
                             <i class="glyphicon glyphicon-log-in"></i> вход
@@ -53,6 +58,15 @@
                             <i class="glyphicon glyphicon-user"></i> регистрация
                         </button>
                     </div>
+                    {% else %}
+                    <p class="navbar-text">
+                        <string>{{ user.username }}</string>, вход выполнен.
+                    </p>
+                    <button class="btn navbar-btn btn-success" type="button" id="logout-button">
+                        <i class="glyphicon glyphicon-log-out"></i> выход
+                    </button>
+                    {% endif %}
+
                 </div>
             </div>
         </div>
@@ -60,7 +74,7 @@
 
     <div class="container">
         <div class="row">
-            <div class="col-lg-3 col-md-3 col-sm-5 col-xs-6">
+            <div class="col-lg-3 col-md-3 col-sm-5">
                 <ul class="list-group">
                     <li class="list-group-item">
                         <a href="#" data-toggle="modal" data-target="#conference-creation-modal">
@@ -69,12 +83,12 @@
                     </li>
                     <li class="list-group-item">
                         <a href="#" data-toggle="modal" data-target="#new-messages-modal">
-                            <i class="glyphicon glyphicon-envelope"></i> Новые сообщения <span class="badge">42</span>
+                            <i class="glyphicon glyphicon-envelope"></i> Сообщения <span class="badge">42</span>
                         </a>
                     </li>
                 </ul>
             </div>
-            <div class="col-lg-9 col-md-9 col-sm-7 col-xs-6">
+            <div class="col-lg-9 col-md-9 col-sm-7">
                 <!-- Nav pills -->
                 <ul class="nav nav-pills nav-justified" role="tablist">
                     <li role="presentation" class="active">
@@ -100,142 +114,250 @@
                 </ul>
                 <!-- Tab panes -->
                 <div class="tab-content">
-                    <div role="tabpanel" class="tab-pane active" id="t1">
-                        <p>
-                            всем привет
-                        </p>
+                    <div role="tabpanel" class="tab-pane active" id="t1" style="height: calc(100vh - 225px);overflow-y: scroll;">
+                        <div class="well well-sm"><span class="label label-info">vasiliy</span> всем привет</div>
+                        <div class="well well-sm"><span class="label label-info">vasiliy</span> всем привет</div>
+                        <div class="well well-sm"><span class="label label-info">vasiliy</span> всем привет</div>
+                        <div class="well well-sm"><span class="label label-info">vasiliy</span> всем привет</div>
+                        <div class="well well-sm"><span class="label label-info">vasiliy</span> всем привет</div>
+                        <div class="well well-sm"><span class="label label-info">vasiliy</span> всем привет</div>
+                        <div class="well well-sm"><span class="label label-info">vasiliy</span> всем привет</div>
                     </div>
-                    <div role="tabpanel" class="tab-pane" id="t2">
+                    <div role="tabpanel" class="tab-pane" id="t2" style="height: calc(100vh - 225px);overflow-y: scroll;">
                         <p>
                             всем пока
                         </p>
                     </div>
-                    <div role="tabpanel" class="tab-pane" id="t3">
+                    <div role="tabpanel" class="tab-pane" id="t3" style="height: calc(100vh - 225px);overflow-y: scroll;">
                         <p>
                             пока не всем
                         </p>
                     </div>
-                    <div role="tabpanel" class="tab-pane" id="t4">
-                        <p>
-                            не совсем привет
-                        </p>
+                    <div role="tabpanel" class="tab-pane" id="t4" style="height: calc(100vh - 225px);overflow-y: scroll;">
+                        <div class="well well-sm"><span class="label label-info">vasiliy</span> всем привет</div>
+                        <div class="well well-sm"><span class="label label-info">vasiliy</span> всем привет</div>
+                        <div class="well well-sm"><span class="label label-info">vasiliy</span> всем привет</div>
+                        <div class="well well-sm"><span class="label label-info">vasiliy</span> всем привет</div>
+                        <div class="well well-sm"><span class="label label-info">vasiliy</span> всем привет</div>
+                        <div class="well well-sm"><span class="label label-info">vasiliy</span> всем привет</div>
+                        <div class="well well-sm"><span class="label label-info">vasiliy</span> всем привет</div>
                     </div>
-                </div>
+                </div>   
+                <div class="input-group">
+                    <textarea class="form-control custom-control" rows="4" style="resize:none" placeholder="Введите сообщение . . ."></textarea>     
+                    <span class="input-group-addon btn btn-dafeult"><i class="glyphicon glyphicon-send"></i> Отправить</span>
+                </div>             
             </div>
         </div>
     </div>
+{% if not user.is_authenticated %}
+<div class="modal fade" id="login-modal">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span>&times;</span>
+                </button>
+                <h4 class="modal-title">Вход на сайт</h4>
+            </div>
+            <div class="modal-body" id="login-messages">
+               <div class="form-group">
+                    <input type="text" class="form-control" placeholder="Логин" id="login-username">
+                    <br>
+                    <input type="password" class="form-control" placeholder="Палорь" id="login-password">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Закрыть</button>
+                <button type="button" class="btn btn-primary" id="login-button">Войти</button>
+            </div>
+        </div>
+    </div>
+</div>
 
-    <div class="modal fade" id="login-modal">
-        <div class="modal-dialog modal-sm">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal"><span>&times;</span>
-                    </button>
-                    <h4 class="modal-title">Вход на сайт</h4>
+<div class="modal fade" id="register-modal">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span>&times;</span>
+                </button>
+                <h4 class="modal-title">Регистрация пользователя</h4>
+            </div>
+            <div class="modal-body" id="registration-messages">
+                <div class="form-group">
+                    <input type="text" class="form-control" placeholder="Логин" id="registration-username">
+                    <br>
+                    <input type="password" class="form-control" placeholder="Палорь" id="registration-password1">
+                    <br>
+                    <input type="password" class="form-control" placeholder="Повтор пароля" id="registration-password2">
                 </div>
-                <div class="modal-body">
-                    <div class="form-group">
-                        <input type="text" class="form-control" placeholder="Логин">
-                        <br>
-                        <input type="password" class="form-control" placeholder="Палорь">
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Отмена</button>
-                    <button type="button" class="btn btn-primary">Войти</button>
-                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Закрыть</button>
+                <button type="button" class="btn btn-primary" id="registration-button">Зарегистрироваться</button>
             </div>
         </div>
     </div>
+</div>
+{% else %}
+<div class="modal fade" id="conference-creation-modal">
+    <div class="modal-dialog modal-md">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span>&times;</span>
+                </button>
+                <h4 class="modal-title">Создание конференции</h4>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <textarea class="form-control" rows="3" style="resize:none" placeholder="Введите сообщение . . ."></textarea>
+                    <br>
+                    <select class="form-control" multiple id="conf-members" data-placeholder="Участники.">
+                        <option value="1">Гена</option>
+                        <option value="1">Гена</option>
+                        <option value="1">Гена</option>
+                        <option value="1">Гена</option>
+                        <option value="1">Гена</option>
+                        <option value="1">Генаwsa</option>
+                        <option value="1">Гена</option>
+                        <option value="1">Гена12312</option>
+                        <option value="1">Генаwqweqwe</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-primary">Создать</button>
+            </div>
+        </div>
+    </div>
+</div>
 
-    <div class="modal fade" id="register-modal">
-        <div class="modal-dialog modal-sm">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal"><span>&times;</span>
+<div class="modal fade" id="new-messages-modal">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span>&times;</span>
+                </button>
+                <h4 class="modal-title">Новые сообщения</h4>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info alert-dismissible" role="alert">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
                     </button>
-                    <h4 class="modal-title">Регистрация пользователя</h4>
+                        <span class="badge">14</span> <strong>Приглашение</strong> Это текст приглоса.
                 </div>
-                <div class="modal-body">
-                    <div class="form-group">
-                        <input type="text" class="form-control" placeholder="Логин">
-                        <br>
-                        <input type="password" class="form-control" placeholder="Палорь">
-                        <br>
-                        <input type="password" class="form-control" placeholder="Повтор пароля">
-                    </div>
+                <div class="alert alert-success alert-dismissible" role="alert">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                        <span class="badge">1</span> <strong>Предупреждение</strong> Это текст Предупреждения.
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Отмена</button>
-                    <button type="button" class="btn btn-primary">Зарегистрироваться</button>
+                <div class="alert alert-danger alert-dismissible" role="alert">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                        <span class="badge">16</span> <strong>Ошибка</strong> Это текст ошибки.
                 </div>
+                <div class="alert alert-danger alert-dismissible" role="alert">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                        <span class="badge">16</span> <strong>Ошибка</strong> Это текст ошибки.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Закрыть</button>
             </div>
         </div>
     </div>
-    
-    <div class="modal fade" id="conference-creation-modal">
-        <div class="modal-dialog modal-sm">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal"><span>&times;</span>
-                    </button>
-                    <h4 class="modal-title">Создание конференции</h4>
-                </div>
-                <div class="modal-body">
-                    <div class="form-group">
-                        <input type="text" class="form-control" placeholder="Участники конференции">
-                        <br>
-                        <input type="text" class="form-control" placeholder="Текст приглашения">
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Отмена</button>
-                    <button type="button" class="btn btn-primary">Начать</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <div class="modal fade" id="new-messages-modal">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal"><span>&times;</span>
-                    </button>
-                    <h4 class="modal-title">Новые сообщения</h4>
-                </div>
-                <div class="modal-body">
-                    <div class="alert alert-info alert-dismissible" role="alert">
-                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                            <span class="badge">14</span> <strong>Приглашение</strong> Это текст приглоса.
-                    </div>
-                    <div class="alert alert-success alert-dismissible" role="alert">
-                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                            <span class="badge">1</span> <strong>Предупреждение</strong> Это текст Предупреждения.
-                    </div>
-                    <div class="alert alert-danger alert-dismissible" role="alert">
-                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                            <span class="badge">16</span> <strong>Ошибка</strong> Это текст ошибки.
-                    </div>
-                    <div class="alert alert-danger alert-dismissible" role="alert">
-                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                            <span class="badge">16</span> <strong>Ошибка</strong> Это текст ошибки.
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Закрыть</button>
-                </div>
-            </div>
-        </div>
-    </div>
+</div>
+{% endif %}
+
+<script type="text/javascript">
+    $(document).ready(function(){
+    {% if not user.is_authenticated %}
+        //Обработка входа на сайт
+        $('#login-button').click(function(){
+            $.ajax({
+                async: true,
+                type: 'POST',
+                data: {
+                    username: $('#login-username').val(),
+                    password: $('#login-password').val()
+                },
+                dataType: 'json',
+                url:'/auth/login/',
+                success: function(data){
+                    var alert_type;
+                    if(data['is_error'] == true){
+                        alert_type = "alert-danger";
+                    }else{
+                        alert_type = "alert-info";
+                        $('#login-username').val('');
+                        $('#login-password').val('');
+                        $('#login-button').remove();
+                        setTimeout('window.location.reload()', 3000)
+                    }
+                    $('#login-messages').prepend(
+                        '<div class="alert ' + alert_type + ' alert-dismissible" role="alert">'+
+                            '<button type="button" class="close" data-dismiss="alert" aria-label="Close">'+
+                                '<span aria-hidden="true">&times;</span>'+
+                            '</button>'+
+                            '<strong>'+ data['message'] +'</strong>'+
+                        '</div>'
+                    );
+                },
+            });
+        });
+
+        //Регистрация нового пользователя
+        $('#registration-button').click(function(){
+            $.ajax({
+                async: true,
+                type: 'POST',
+                data: {
+                    username: $('#registration-username').val(),
+                    password1: $('#registration-password1').val(),
+                    password2: $('#registration-password2').val(),
+
+                },
+                dataType: 'json',
+                url:'/auth/register/',
+                success: function(data){
+                    var alert_type;
+                    if(data['is_error'] == true){
+                        alert_type = "alert-danger";
+                    }else{
+                        alert_type = "alert-info";
+                        $('#registration-username').val('');
+                        $('#registration-password1').val('');
+                        $('#registration-password2').val('');
+                        $('#registration-button').remove();
+                    }
+                    $('#registration-messages').prepend(
+                        '<div class="alert ' + alert_type + ' alert-dismissible" role="alert">'+
+                            '<button type="button" class="close" data-dismiss="alert" aria-label="Close">'+
+                                '<span aria-hidden="true">&times;</span>'+
+                            '</button>'+
+                            '<strong>'+ data['message'] +'</strong>'+
+                        '</div>'
+                    );
+                },
+            });
+        });
+    {% else %}
+        $('#conf-members').chosen({width: "100%", no_results_text: "Мы не нашли ничего похожего на "});
+        $("#conf-members").trigger("chosen:updated");
+        
+        $('#logout-button').click(function(){
+            $.get('/auth/logout/',{},function(){
+                window.location.reload();
+            });
+        });
+    {% endif %}
+    });
+</script>
 </body>
 
 </html>
