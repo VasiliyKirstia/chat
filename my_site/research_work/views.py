@@ -1,5 +1,4 @@
 import json
-from urllib.parse import quote_from_bytes, unquote
 
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required

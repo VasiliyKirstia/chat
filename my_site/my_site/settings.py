@@ -115,3 +115,7 @@ STATICFILES_DIRS = [
 ]
 
 STATIC_URL = '/static/'
+
+# sessions
+
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
