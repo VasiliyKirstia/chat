@@ -17,13 +17,19 @@
     <link href="{% static 'bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
     <link href="{% static 'bootstrap/css/bootstrap-theme.min.css' %}" rel="stylesheet">
 
-    <script src="{% static 'scripts/jquery.min.js' %}"></script>
-    <script src="{% static 'bootstrap/js/bootstrap.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'scripts/jquery.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'bootstrap/js/bootstrap.min.js' %}"></script>
     
     <!--Chosen-->
-    <script src="{% static 'plugins/chosen/chosen.jquery.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'plugins/chosen/chosen.jquery.min.js' %}"></script>
     <link type="text/css" rel="stylesheet" href="{% static 'plugins/chosen/chosen.min.css' %}">
     <link type="text/css" rel="stylesheet" href="{% static 'plugins/chosen/chosen-custom.css' %}">
+    
+    <!--Чатик-->
+    <script type="text/javascript" src="{% static 'scripts/chat.js' %}"></script>
+    
+    <!-- CSRF_PROTECTION-->
+    <script type="text/javascript" src="{% static 'scripts/csrf.js' %}"></script>
     
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
     <!--[if lt IE 9]>
@@ -74,7 +80,7 @@
 
     <div class="container">
         <div class="row">
-            <div class="col-lg-3 col-md-3 col-sm-5">
+            <div class="col-lg-3 col-md-3 col-sm-5" id="left-column">
                 <ul class="list-group">
                     <li class="list-group-item">
                         <a href="#" data-toggle="modal" data-target="#conference-creation-modal">
@@ -82,70 +88,26 @@
                         </a>
                     </li>
                     <li class="list-group-item">
-                        <a href="#" data-toggle="modal" data-target="#new-messages-modal">
-                            <i class="glyphicon glyphicon-envelope"></i> Сообщения <span class="badge">42</span>
+                        <a href="#" data-toggle="modal" data-target="#conferences-modal">
+                            <i class="glyphicon glyphicon-envelope"></i> Конференции <span class="badge" id="new-messages-count">42</span>
                         </a>
                     </li>
                 </ul>
             </div>
             <div class="col-lg-9 col-md-9 col-sm-7">
                 <!-- Nav pills -->
-                <ul class="nav nav-pills nav-justified" role="tablist">
-                    <li role="presentation" class="active">
-                        <a href="#t1" aria-controls="home" role="tab" data-toggle="tab">
-                            Вкладка 1
-                        </a>
-                    </li>
-                    <li role="presentation">
-                        <a href="#t2" aria-controls="profile" role="tab" data-toggle="tab">
-                            Вкладка 2
-                        </a>
-                    </li>
-                    <li role="presentation">
-                        <a href="#t3" aria-controls="messages" role="tab" data-toggle="tab">
-                            Вкладка 3
-                        </a>
-                    </li>
-                    <li role="presentation">
-                        <a href="#t4" aria-controls="settings" role="tab" data-toggle="tab">
-                            Вкладка 4
-                        </a>
-                    </li>
+                <ul class="nav nav-pills nav-justified" role="tablist" id="tabs-container">
+                    
                 </ul>
                 <!-- Tab panes -->
-                <div class="tab-content">
-                    <div role="tabpanel" class="tab-pane active" id="t1" style="height: calc(100vh - 225px);overflow-y: scroll;">
-                        <div class="well well-sm"><span class="label label-info">vasiliy</span> всем привет</div>
-                        <div class="well well-sm"><span class="label label-info">vasiliy</span> всем привет</div>
-                        <div class="well well-sm"><span class="label label-info">vasiliy</span> всем привет</div>
-                        <div class="well well-sm"><span class="label label-info">vasiliy</span> всем привет</div>
-                        <div class="well well-sm"><span class="label label-info">vasiliy</span> всем привет</div>
-                        <div class="well well-sm"><span class="label label-info">vasiliy</span> всем привет</div>
-                        <div class="well well-sm"><span class="label label-info">vasiliy</span> всем привет</div>
-                    </div>
-                    <div role="tabpanel" class="tab-pane" id="t2" style="height: calc(100vh - 225px);overflow-y: scroll;">
-                        <p>
-                            всем пока
-                        </p>
-                    </div>
-                    <div role="tabpanel" class="tab-pane" id="t3" style="height: calc(100vh - 225px);overflow-y: scroll;">
-                        <p>
-                            пока не всем
-                        </p>
-                    </div>
-                    <div role="tabpanel" class="tab-pane" id="t4" style="height: calc(100vh - 225px);overflow-y: scroll;">
-                        <div class="well well-sm"><span class="label label-info">vasiliy</span> всем привет</div>
-                        <div class="well well-sm"><span class="label label-info">vasiliy</span> всем привет</div>
-                        <div class="well well-sm"><span class="label label-info">vasiliy</span> всем привет</div>
-                        <div class="well well-sm"><span class="label label-info">vasiliy</span> всем привет</div>
-                        <div class="well well-sm"><span class="label label-info">vasiliy</span> всем привет</div>
-                        <div class="well well-sm"><span class="label label-info">vasiliy</span> всем привет</div>
-                        <div class="well well-sm"><span class="label label-info">vasiliy</span> всем привет</div>
-                    </div>
+                <div class="tab-content" id="tabpanels-container">
+                    
                 </div>   
                 <div class="input-group">
-                    <textarea class="form-control custom-control" rows="4" style="resize:none" placeholder="Введите сообщение . . ."></textarea>     
-                    <span class="input-group-addon btn btn-dafeult"><i class="glyphicon glyphicon-send"></i> Отправить</span>
+                    <textarea class="form-control custom-control" rows="4" style="resize:none" placeholder="Введите сообщение . . ." id="message-send-textarea"></textarea>     
+                    <span class="input-group-addon btn btn-dafeult" id="message-send-button">
+                        <i class="glyphicon glyphicon-send"></i> Отправить
+                    </span>
                 </div>             
             </div>
         </div>
@@ -209,62 +171,33 @@
             </div>
             <div class="modal-body">
                 <div class="form-group">
-                    <textarea class="form-control" rows="3" style="resize:none" placeholder="Введите сообщение . . ."></textarea>
+                    <textarea class="form-control" rows="3" style="resize:none" placeholder="Введите сообщение . . ." id="conference-create-textarea"></textarea>
                     <br>
-                    <select class="form-control" multiple id="conf-members" data-placeholder="Участники.">
-                        <option value="1">Гена</option>
-                        <option value="1">Гена</option>
-                        <option value="1">Гена</option>
-                        <option value="1">Гена</option>
-                        <option value="1">Гена</option>
-                        <option value="1">Генаwsa</option>
-                        <option value="1">Гена</option>
-                        <option value="1">Гена12312</option>
-                        <option value="1">Генаwqweqwe</option>
+                    <select class="form-control" multiple id="conference-create-multiselect" data-placeholder="Участники.">
+                    {% for user in users_list %}
+                        <option value="{{user.username}}">{{user.username}}</option>
+                    {% endfor %}
                     </select>
                 </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">Отмена</button>
-                <button type="button" class="btn btn-primary">Создать</button>
+                <button type="button" class="btn btn-primary" id="conference-create-button">Создать</button>
             </div>
         </div>
     </div>
 </div>
 
-<div class="modal fade" id="new-messages-modal">
+<div class="modal fade" id="conferences-modal">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal"><span>&times;</span>
                 </button>
-                <h4 class="modal-title">Новые сообщения</h4>
+                <h4 class="modal-title">Конференции</h4>
             </div>
-            <div class="modal-body">
-                <div class="alert alert-info alert-dismissible" role="alert">
-                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                        <span class="badge">14</span> <strong>Приглашение</strong> Это текст приглоса.
-                </div>
-                <div class="alert alert-success alert-dismissible" role="alert">
-                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                        <span class="badge">1</span> <strong>Предупреждение</strong> Это текст Предупреждения.
-                </div>
-                <div class="alert alert-danger alert-dismissible" role="alert">
-                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                        <span class="badge">16</span> <strong>Ошибка</strong> Это текст ошибки.
-                </div>
-                <div class="alert alert-danger alert-dismissible" role="alert">
-                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                        <span class="badge">16</span> <strong>Ошибка</strong> Это текст ошибки.
-                </div>
+            <div class="modal-body" id="conferences-container">
+                
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">Закрыть</button>
@@ -347,8 +280,8 @@
             });
         });
     {% else %}
-        $('#conf-members').chosen({width: "100%", no_results_text: "Мы не нашли ничего похожего на "});
-        $("#conf-members").trigger("chosen:updated");
+        $('#conference-create-multiselect').chosen({width: "100%", no_results_text: "Мы не нашли ничего похожего на "});
+        $("#conference-create-multiselect").trigger("chosen:updated");
         
         $('#logout-button').click(function(){
             $.get('/auth/logout/',{},function(){

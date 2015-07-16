@@ -5,12 +5,12 @@ from django.template import RequestContext
 from django.core.context_processors import csrf
 from django.shortcuts import render_to_response
 from django.shortcuts import redirect
-from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm, PasswordChangeForm
 import json
 
 
-@csrf_exempt
+@csrf_protect
 def log_out(request):
     """
     Выход с сайта
@@ -19,7 +19,7 @@ def log_out(request):
     return HttpResponse('')
 
 
-@csrf_exempt
+@csrf_protect
 def log_in(request):
     """
     Вход на сайт
@@ -48,7 +48,7 @@ def log_in(request):
     return JsonResponse(obj)
 
 
-@csrf_exempt
+@csrf_protect
 def register(request):
     """
     Регистрация пользователя

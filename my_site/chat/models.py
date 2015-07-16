@@ -2,14 +2,13 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.contrib.sessions.models import Session
 from django.utils import timezone
-from datetime import datetime
 from django.utils.html import escape
 
 
 class Conference(models.Model):
-    pk = models.AutoField(primary_key=True)
+    id = models.AutoField(primary_key=True)
 
-    link_to_user = models.ManyToManyField(to=User, through=ConferenceUserLink)
+    link_to_user = models.ManyToManyField(to=User, through='ConferenceUserLink')
 
     def get_members_name(self):
         return [link.user.username for link in ConferenceUserLink.objects.filter(conference=self)]
@@ -22,8 +21,7 @@ class Conference(models.Model):
         for session in sessions:
             data = session.get_decoded()
             active_uid_list.append(data.get('_auth_user_id', None))
-
-        return [{link.user.username: True if link.user.pk in active_uid_list else False} for link in links]
+        return [[link.user.username, True if link.user.pk in active_uid_list else False] for link in links]
 
     def get_messages(self):
         return Message.objects.filter(conference=self)
@@ -51,21 +49,21 @@ class Conference(models.Model):
         Message.objects.create(conference=self,
                                 sender=sender,
                                 message=escape(message),
-                                time_stamp=datetime.timestamp())
+                                time_stamp=timezone.now().timestamp())
 
 
 class ConferenceUserLink(models.Model):
-    pk = models.AutoField(primary_key=True)
+    id = models.AutoField(primary_key=True)
 
     user = models.ForeignKey(to=User, related_name='conferences')
 
     conference = models.ForeignKey(to=Conference, related_name='users')
 
-    last_message_date = models.DateTimeField()
+    last_message_date = models.IntegerField()
 
 
 class Message(models.Model):
-    pk = models.AutoField(primary_key=True)
+    id = models.AutoField(primary_key=True)
 
     message = models.TextField()
 
