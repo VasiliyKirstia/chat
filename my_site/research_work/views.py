@@ -1,10 +1,21 @@
 import json
+from django.contrib.auth.models import User
 
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
+from django.views.generic import TemplateView
 
 from research_work.models import *
+
+
+class HomeView(TemplateView):
+    template_name = "research_work/index.html"
+
+    def get_context_data(self, **kwargs):
+        context = super(HomeView, self).get_context_data(**kwargs)
+        context['users_list'] = User.objects.all().exclude(pk=self.request.user.pk)
+        return context
 
 
 @csrf_exempt

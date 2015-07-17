@@ -21,7 +21,7 @@ import auth_system.urls as auth_urls
 
 urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
-    url(r'^secret_research/', include(research_urls, namespace='research')),
     url(r'^auth/', include(auth_urls, namespace='auth')),
     url(r'^chat/', include(chat_urls, namespace='chat')),
+    url(r'^', include(research_urls, namespace='research_work')),
 ]

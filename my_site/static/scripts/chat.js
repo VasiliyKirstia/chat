@@ -492,5 +492,11 @@ $(document).ready(function(){
         };
         bubble();
     })();
-    
+
+    $('#conference-create-multiselect').chosen({
+        width: "100%",
+        no_results_text: "Мы не нашли ничего похожего на "
+    });
+    $("#conference-create-multiselect").trigger("chosen:updated");
+
 });

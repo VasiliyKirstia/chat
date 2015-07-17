@@ -25,8 +25,7 @@
     <link type="text/css" rel="stylesheet" href="{% static 'plugins/chosen/chosen.min.css' %}">
     <link type="text/css" rel="stylesheet" href="{% static 'plugins/chosen/chosen-custom.css' %}">
 
-    <!--Чатик-->
-    <script type="text/javascript" src="{% static 'scripts/chat.js' %}"></script>
+    {% block head %}{% endblock head %}
 
     <!-- CSRF_PROTECTION-->
     <script type="text/javascript" src="{% static 'scripts/csrf.js' %}"></script>
@@ -42,7 +41,7 @@
     <nav class="navbar navbar-default navbar-static-top">
         <div class="container">
             <div class="navbar-header">
-                <a class="navbar-brand" href="#">
+                <a class="navbar-brand" href="{% url 'research_work:home' %}">
                     Мой Сайт
                 </a>
                 <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
@@ -53,8 +52,11 @@
             </div>
             <div id="navbar" class="collapse navbar-collapse">
                 <ul class="nav navbar-nav">
-                    <li class="active">
-                        <a href="#">Чатик</a>
+                    <li {%block main_page%}{%endblock main_page%}>
+                        <a href="{% url 'research_work:home' %}">Главная</a>
+                    </li>
+                    <li {%block chat_page%}{%endblock chat_page%}>
+                        <a href="{% url 'chat:home' %}">Чатик</a>
                     </li>
                 </ul>
                 <ul class="nav navbar-nav navbar-right">
@@ -69,12 +71,12 @@
                     </li>
                     {% else %}
                     <li>
-                       <i class="navbar-text">
-                            {{ user.username }}, вход выполнен.
-                        </i>
-                        <button class="btn btn-default navbar-btn" type="button" id="logout-button">
-                            <i class="glyphicon glyphicon-log-out"></i> выход
-                        </button>
+                       <p class="navbar-text">
+                           {{ user.username }}, вход выполнен.
+                           <a href="{%url 'auth:logout'%}" class="navbar-link">
+                               Выйти
+                           </a>
+                       </p>
                     </li>
                     {% endif %}
 
@@ -83,40 +85,8 @@
         </div>
     </nav>
 
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-3 col-md-3 col-sm-5" id="left-column">
-                <ul class="list-group">
-                    <li class="list-group-item">
-                        <a href="#" data-toggle="modal" data-target="#conference-creation-modal">
-                            <i class="glyphicon glyphicon-comment"></i> Начать конференцию
-                        </a>
-                    </li>
-                    <li class="list-group-item">
-                        <a href="#" data-toggle="modal" data-target="#conferences-modal">
-                            <i class="glyphicon glyphicon-envelope"></i> Конференции <span class="badge" id="new-messages-count">42</span>
-                        </a>
-                    </li>
-                </ul>
-            </div>
-            <div class="col-lg-9 col-md-9 col-sm-7">
-                <!-- Nav pills -->
-                <ul class="nav nav-pills nav-justified" role="tablist" id="tabs-container">
+    {% block content %}{% endblock content %}
 
-                </ul>
-                <!-- Tab panes -->
-                <div class="tab-content" id="tabpanels-container">
-
-                </div>
-                <div class="input-group">
-                    <textarea class="form-control custom-control" rows="4" style="resize:none" placeholder="Введите сообщение . . ." id="message-send-textarea"></textarea>
-                    <span class="input-group-addon btn btn-dafeult" id="message-send-button">
-                        <i class="glyphicon glyphicon-send"></i> Отправить
-                    </span>
-                </div>
-            </div>
-        </div>
-    </div>
     {% if not user.is_authenticated %}
     <div class="modal fade" id="login-modal">
         <div class="modal-dialog modal-sm">
@@ -165,51 +135,7 @@
             </div>
         </div>
     </div>
-    {% else %}
-    <div class="modal fade" id="conference-creation-modal">
-        <div class="modal-dialog modal-md">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal"><span>&times;</span>
-                    </button>
-                    <h4 class="modal-title">Создание конференции</h4>
-                </div>
-                <div class="modal-body">
-                    <div class="form-group">
-                        <textarea class="form-control" rows="3" style="resize:none" placeholder="Введите сообщение . . ." id="conference-create-textarea"></textarea>
-                        <br>
-                        <select class="form-control" multiple id="conference-create-multiselect" data-placeholder="Участники.">
-                            {% for user in users_list %}
-                            <option value="{{user.username}}">{{user.username}}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Отмена</button>
-                    <button type="button" class="btn btn-primary" id="conference-create-button">Создать</button>
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <div class="modal fade" id="conferences-modal">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal"><span>&times;</span>
-                    </button>
-                    <h4 class="modal-title">Конференции</h4>
-                </div>
-                <div class="modal-body" id="conferences-container">
-
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Закрыть</button>
-                </div>
-            </div>
-        </div>
-    </div>
     {% endif %}
 
     <script type="text/javascript">
@@ -283,19 +209,7 @@
                         );
                     },
                 });
-            }); 
-            {% else %}
-            $('#conference-create-multiselect').chosen({
-                width: "100%",
-                no_results_text: "Мы не нашли ничего похожего на "
             });
-            $("#conference-create-multiselect").trigger("chosen:updated");
-
-            $('#logout-button').click(function () {
-                $.get('/auth/logout/', {}, function () {
-                    window.location.reload();
-                });
-            }); 
             {% endif %}
         });
     </script>

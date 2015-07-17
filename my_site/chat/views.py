@@ -2,10 +2,12 @@ from django.views.generic import TemplateView
 from django.http import JsonResponse, HttpResponse, Http404
 from django.shortcuts import get_object_or_404
 from chat.models import *
+from django.utils.decorators import method_decorator
 import json
 
 from django.views.decorators.csrf import csrf_protect
 from django.contrib.auth.decorators import login_required
+
 
 class HomeView(TemplateView):
     template_name = "chat/index.html"
@@ -14,6 +16,10 @@ class HomeView(TemplateView):
         context = super(HomeView, self).get_context_data(**kwargs)
         context['users_list'] = User.objects.all().exclude(pk=self.request.user.pk)
         return context
+
+    @method_decorator(login_required)
+    def dispatch(self, *args, **kwargs):
+        return super(HomeView, self).dispatch(*args, **kwargs)
 
 
 

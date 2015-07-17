@@ -18,7 +18,7 @@ def log_out(request):
     Выход с сайта
     """
     logout(request)
-    return HttpResponse('')
+    return redirect('research_work:home')
 
 
 @csrf_protect
