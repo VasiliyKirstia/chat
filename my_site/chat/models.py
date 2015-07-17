@@ -8,12 +8,12 @@ from django.utils.html import escape
 class Conference(models.Model):
     id = models.AutoField(primary_key=True)
 
-    link_to_user = models.ManyToManyField(to=User, through='ConferenceUserLink')
+    users_set = models.ManyToManyField(to=User, through='ConferenceUserLink')
 
-    def get_members_name(self):
-        return [link.user.username for link in ConferenceUserLink.objects.filter(conference=self)]
+    def get_members_names(self, user):
+        return [_user.username for _user in self.users_set.all().exclude(pk=user.pk)]
 
-    def get_members_name_with_status(self):
+    def get_members_names_with_status(self):
         active_uid_list = []
         sessions = Session.objects.filter(expire_date__gte=timezone.now())
         links = ConferenceUserLink.objects.filter(conference=self)
@@ -22,12 +22,6 @@ class Conference(models.Model):
             data = session.get_decoded()
             active_uid_list.append(data.get('_auth_user_id', None))
         return [[link.user.username, True if link.user.pk in active_uid_list else False] for link in links]
-
-    def get_messages(self):
-        return Message.objects.filter(conference=self)
-
-    def get_messages_count(self):
-        return Message.objects.filter(conference=self).count()
 
     def get_new_messages(self, user):
         last_message_time_stamp = ConferenceUserLink.objects.get(conference=self, user=user).last_message_date
@@ -44,12 +38,14 @@ class Conference(models.Model):
 
     def leave(self, user):
         ConferenceUserLink.objects.get(conference=self, user=user).delete()
+        if self.users_set.count() == 0:
+            self.delete()
 
     def add_message(self, sender, message):
         Message.objects.create(conference=self,
-                                sender=sender,
-                                message=escape(message),
-                                time_stamp=timezone.now().timestamp())
+                               sender=sender,
+                               message=escape(message),
+                               time_stamp=timezone.now().timestamp())
 
 
 class ConferenceUserLink(models.Model):

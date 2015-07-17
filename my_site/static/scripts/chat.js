@@ -128,6 +128,12 @@ function ServerAPI() {
             type: 'POST',
             data: {
                 'conference_pk': conference_pk
+            },
+            dataType: 'text',
+            success: function(){
+                _obj.conferences_pk_array.splice(_obj.conferences_pk_array.indexOf(conference_pk), 1);
+                delete _obj.users_dict[conference_pk];
+                delete _obj.messages_count_dict[conference_pk];
             }
         });
     };
@@ -142,8 +148,6 @@ function ChatGUI(_serverAPI) {
     _obj.tabs_data.current_count = 0;
     _obj.tabs_data.active_tab_id = undefined;
     _obj.tabs_data.already_opened = [];
-    _obj.tabs_data.user_update_timeout = 5000; //ms
-    _obj.tabs_data.message_update_timeout = 1000;//ms
     _obj.tabs_data.color_schemes = {
         0: 'primary',
         1: 'success',
@@ -153,7 +157,12 @@ function ChatGUI(_serverAPI) {
     };
     _obj.tabs_data.color_schemes_count = Object.keys(_obj.tabs_data.color_schemes).length;
     
-    _obj.new_message_counts_update_timeout = 5000;//ms
+    _obj.update_information = {};
+    _obj.update_information.message_idle_steps_count = 4;
+    _obj.update_information.users_idle_steps_count = 32;
+    _obj.update_information.message_count_idle_steps_count = 16;
+    _obj.update_information.timeout = 500;  //ms
+
     
     _obj.GUIElements = {};
     _obj.GUIFunctions = {};
@@ -177,7 +186,7 @@ function ChatGUI(_serverAPI) {
     
     //добавляет конференцию со свойством data-id равным conference_pk
     _obj.GUIFunctions.add_conference = function(members_list, conference_pk, new_message_count){
-        var name = members_list.join(', ');
+        var name = members_list.length > 0 ? members_list.join(', ') : '*пустая*';
         
         if(new_message_count == 0){
              _obj.GUIElements.conferences_container.append(
@@ -208,14 +217,14 @@ function ChatGUI(_serverAPI) {
     };
     
     //добавляет пользователя с учетом его статуса
-    _obj.GUIFunctions.add_user = function(username, is_online, panel){
+    _obj.GUIFunctions.add_user = function(username, is_online, container){
         if(is_online){
-            panel.append(
+            container.append(
                     '<li class="list-group-item list-group-item-success">'+
                     '<i class="glyphicon glyphicon-ok-circle"></i> ' + username +
                     '</li>');
         }else{
-            panel.append(
+            container.append(
                     '<li class="list-group-item list-group-item-danger">'+
                     '<i class="glyphicon glyphicon-remove-circle"></i> ' + username +
                     '</li>');
@@ -240,7 +249,7 @@ function ChatGUI(_serverAPI) {
                 );
 
                 var userpanel = $(
-                    '<div class="panel panel-primary" id="members-panel-' + conference_pk + '">' +
+                    '<div class="panel panel-primary hidden-xs" id="members-panel-' + conference_pk + '">' +
                     '<div class="panel-heading">Участники конференции</div>'+
                     '<ul class="list-group" style="max-height: calc(100vh - 240px);overflow-y: auto;">'+
                     '</ul>'+
@@ -290,26 +299,34 @@ function ChatGUI(_serverAPI) {
         */
         (function(){
             var my_conference_pk = conference_pk;
+            var current_step_number = -1;
             var my_userpanel = _obj.GUIElements.active_user_panels_container.find('#members-panel-' + my_conference_pk).find('ul');
             var bubble = function(){
+                current_step_number = (current_step_number + 1) % _obj.update_information.users_idle_steps_count;
+                if(current_step_number != 0){
+                    setTimeout(bubble, _obj.update_information.timeout);
+                    return;
+                }
+                
                 if( _obj.tabs_data.already_opened.indexOf(my_conference_pk) == -1 ) {
                     return;
                 }
                 
                 if( _obj.tabs_data.active_tab_id != my_conference_pk ){
-                    setTimeout(bubble, _obj.tabs_data.user_update_timeout);
+                    setTimeout(bubble, _obj.update_information.timeout);
                     return;
                 }
-                
-                my_userpanel.html('');
-                
+            
                 _serverAPI.get_users(my_conference_pk, function(returnedData){
+                    var $container = $("<div></div>");
                     $.each(returnedData, function(index, elem){
-                        _obj.GUIFunctions.add_user(elem[0], elem[1], my_userpanel);
+                        _obj.GUIFunctions.add_user(elem[0], elem[1], $container);
                     });
+                    my_userpanel.html($container.html());
                 });
                 
-                setTimeout(bubble, _obj.tabs_data.user_update_timeout);
+                
+                setTimeout(bubble, _obj.update_information.timeout);
             };
             bubble();
         })();
@@ -322,6 +339,7 @@ function ChatGUI(_serverAPI) {
         *   Как только вкладка закрывается пузырь перестает существовать.
         */
         (function(){
+            var current_step_number = -1;
             var my_conference_pk = conference_pk;
             var my_last_message = 0;
             var my_color_schemes_dict = {};
@@ -330,6 +348,12 @@ function ChatGUI(_serverAPI) {
             });
             
             var bubble = function(){
+                current_step_number = (current_step_number + 1) % _obj.update_information.message_idle_steps_count;
+                if(current_step_number != 0){
+                    setTimeout(bubble, _obj.update_information.timeout);
+                    return;
+                }
+                
                 if( _obj.tabs_data.already_opened.indexOf(my_conference_pk) == -1 ) {
                     return;
                 }
@@ -376,7 +400,7 @@ $(document).ready(function(){
     //открытие конференции во вкладке
     _chatGUI.GUIElements.conferences_container.on('click', 'a.badge', function(eventObj){
         var conference_pk = eventObj.target.dataset.id;
-        var tab_name = _serverAPI.users_dict[conference_pk].join(', ');       
+        var tab_name = _serverAPI.users_dict[conference_pk].length > 0 ? _serverAPI.users_dict[conference_pk].join(', ') : '*пустая*';       
         _chatGUI.GUIFunctions.add_tab(tab_name, conference_pk);
     });
     
@@ -418,6 +442,10 @@ $(document).ready(function(){
         var index_of_elem = _chatGUI.tabs_data.already_opened.indexOf(conference_pk);
         if(index_of_elem != -1){
             _chatGUI.tabs_data.already_opened.splice(index_of_elem, 1);
+            if(_chatGUI.tabs_data.active_tab_id == conference_pk){
+                _chatGUI.tabs_data.active_tab_id = undefined;    
+            }          
+            
             _chatGUI.GUIElements.tabs_container.find('li > a[data-id='+conference_pk+']').parent().remove()
             _chatGUI.GUIElements.tabpanels_container.find('#'+conference_pk).remove()
             _chatGUI.GUIElements.active_user_panels_container.find('#members-panel-'+conference_pk).remove();
@@ -430,7 +458,14 @@ $(document).ready(function(){
     
     //получение количества новых сообщений и новых конференций
     (function(){
+        var current_step_number = -1;
         var bubble = function(){
+            current_step_number = (current_step_number + 1) % _chatGUI.update_information.message_count_idle_steps_count;
+            if(current_step_number != 0){
+                setTimeout(bubble, _chatGUI.update_information.timeout);
+                return;
+            }
+            
             _serverAPI.get_new_messages_count(function(new_conferences_pk_list){
                 $.each(new_conferences_pk_list, function(index, elem){
                     _chatGUI.GUIFunctions.add_conference(_serverAPI.users_dict[elem],elem,_serverAPI.messages_count_dict[elem]);    

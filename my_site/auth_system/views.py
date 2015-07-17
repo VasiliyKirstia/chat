@@ -1,4 +1,5 @@
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.http import JsonResponse, HttpResponse
 from django.template import RequestContext
@@ -11,6 +12,7 @@ import json
 
 
 @csrf_protect
+@login_required
 def log_out(request):
     """
     Выход с сайта
@@ -69,6 +71,4 @@ def register(request):
             obj['message'] = "Либо пароли не совпадают, либо пользователь с таким именем уже существует."
     return JsonResponse(obj)
 
-
-# todo добавить регистрацию пользователей
 # todo добавить возможность редактировать личные данные пользователей
