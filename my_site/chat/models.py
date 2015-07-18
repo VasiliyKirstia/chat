@@ -37,7 +37,9 @@ class Conference(models.Model):
         return Message.objects.filter(conference=self, time_stamp__gt=time_stamp)
 
     def leave(self, user):
-        ConferenceUserLink.objects.get(conference=self, user=user).delete()
+        for_remove = ConferenceUserLink.objects.get(conference=self, user=user)
+        if for_remove is not None:
+            for_remove.delete()
         if self.users_set.count() == 0:
             self.delete()
 

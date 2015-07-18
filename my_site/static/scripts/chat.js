@@ -3,6 +3,8 @@ function ServerAPI() {
 
     //список ключей конференций
     _obj.conferences_pk_array = [];
+    //проверяет наличие конференции в списке конференций
+    _obj.conference_already_added = function(conference_pk){return (_obj.conferences_pk_array.indexOf(conference_pk) != -1);};
 
     //словарь списков участников - ключи:pk конференций, значения: списки участников
     _obj.users_dict = {};
@@ -60,10 +62,12 @@ function ServerAPI() {
                     _obj.messages_count_dict[elem['pk']] = elem['messages_count'];
                 });
                 $.each(returnedData['new_conferences'], function (index, elem) {
-                    _obj.conferences_pk_array.push(elem['pk']);
-                    new_conferences_pk_list.push(elem['pk']);
-                    _obj.users_dict[elem['pk']] = elem['users'];
-                    _obj.messages_count_dict[elem['pk']] = elem['messages_count'];
+                    if( !_obj.conference_already_added(elem['pk']) ){
+                        _obj.conferences_pk_array.push(elem['pk']);
+                        _obj.users_dict[elem['pk']] = elem['users'];
+                        _obj.messages_count_dict[elem['pk']] = elem['messages_count'];
+                        new_conferences_pk_list.push(elem['pk']);
+                    }
                 });
                 callback(new_conferences_pk_list);
             }
@@ -90,7 +94,7 @@ function ServerAPI() {
     _obj.create_conference = function (users_list, message, callback) {
         $.ajax({
             url: '/chat/create_conference/',
-            async: true,
+            async: false,
             type: 'POST',
             data: {
                 'users': JSON.stringify(users_list),
@@ -98,11 +102,14 @@ function ServerAPI() {
             },
             dataType: 'json',
             success: function (returnedData) {
-                _obj.conferences_pk_array.push(returnedData['conference_pk']);
-                _obj.users_dict[returnedData['conference_pk']] = returnedData['users'];
-                _obj.messages_count_dict[returnedData['conference_pk']] = 0;
-                
-                callback(returnedData['conference_pk']);
+                if( !_obj.conference_already_added(returnedData['conference_pk']) ){
+                    _obj.conferences_pk_array.push(returnedData['conference_pk']);
+                    _obj.users_dict[returnedData['conference_pk']] = returnedData['users'];
+                    _obj.messages_count_dict[returnedData['conference_pk']] = 0;
+                    
+                    callback(returnedData['conference_pk']);
+                }
+                callback(undefined);
             }
         });
     };
@@ -124,7 +131,7 @@ function ServerAPI() {
     _obj.leave = function (conference_pk) {
         $.ajax({
             url: '/chat/leave/',
-            async: true,
+            async: false,
             type: 'POST',
             data: {
                 'conference_pk': conference_pk
@@ -399,7 +406,7 @@ $(document).ready(function(){
     
     //открытие конференции во вкладке
     _chatGUI.GUIElements.conferences_container.on('click', 'a.badge', function(eventObj){
-        var conference_pk = eventObj.target.dataset.id;
+        var conference_pk = parseInt(eventObj.target.dataset.id);
         var tab_name = _serverAPI.users_dict[conference_pk].length > 0 ? _serverAPI.users_dict[conference_pk].join(', ') : '*пустая*';       
         _chatGUI.GUIFunctions.add_tab(tab_name, conference_pk);
     });
@@ -407,7 +414,7 @@ $(document).ready(function(){
     //переключение вкладок
     _chatGUI.GUIElements.tabs_container.on('click', 'a', function(eventObj){
         _chatGUI.GUIElements.active_user_panels_container.find('#members-panel-' + _chatGUI.tabs_data.active_tab_id).addClass('hide');
-        _chatGUI.tabs_data.active_tab_id = eventObj.target.dataset.id;
+        _chatGUI.tabs_data.active_tab_id = parseInt(eventObj.target.dataset.id);
         _chatGUI.GUIElements.active_user_panels_container.find('#members-panel-' + _chatGUI.tabs_data.active_tab_id).removeClass('hide');
     });
     
@@ -428,15 +435,21 @@ $(document).ready(function(){
         var message = (_chatGUI.GUIElements.conference_create_textarea.val()).trim();
         
         _serverAPI.create_conference(users_list, message, function(conference_pk){
-            _chatGUI.GUIFunctions.add_conference(_serverAPI.users_dict[conference_pk],conference_pk,_serverAPI.messages_count_dict[conference_pk]);
-            _chatGUI.GUIElements.conferences_container.find('a[data-id='+conference_pk+']').click();
-            _chatGUI.GUIElements.conference_create_textarea.val('');
+            if(conference_pk != undefined){
+                _chatGUI.GUIFunctions.add_conference(_serverAPI.users_dict[conference_pk],conference_pk,_serverAPI.messages_count_dict[conference_pk]);
+                _chatGUI.GUIElements.conferences_container.find('a[data-id='+conference_pk+']').click();
+                _chatGUI.GUIElements.conference_create_textarea.val('');
+            }
         });
     });
     
     //удаление конференции
     _chatGUI.GUIElements.conferences_container.on('click', 'button.close', function(eventObj){
-        var conference_pk = eventObj.target.dataset.id
+        var conference_pk = parseInt(eventObj.target.dataset.id);
+        if( !_serverAPI.conference_already_added(conference_pk) ){
+            return;
+        }
+        
         _serverAPI.leave(conference_pk);
         
         var index_of_elem = _chatGUI.tabs_data.already_opened.indexOf(conference_pk);
