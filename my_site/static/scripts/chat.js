@@ -152,9 +152,11 @@ function ChatGUI(_serverAPI) {
         
     _obj.tabs_data = {};
     _obj.tabs_data.max_count = 4;
-    _obj.tabs_data.current_count = 0;
     _obj.tabs_data.active_tab_id = undefined;
     _obj.tabs_data.already_opened = [];
+    
+    _obj.tabs_data.is_already_opened = function(conference_pk){ return (_obj.tabs_data.already_opened.indexOf(conference_pk) != -1); };
+    
     _obj.tabs_data.color_schemes = {
         0: 'primary',
         1: 'success',
@@ -241,20 +243,23 @@ function ChatGUI(_serverAPI) {
     //добавляет вкладку с id равным conference_pk и панель участников с id равным members-panel-[conference_pk]
     _obj.GUIFunctions.add_tab = function(tab_name, conference_pk){
         //если не исчерпан лимит одновременно открытых вкладок
-        if(_obj.tabs_data.current_count < _obj.tabs_data.max_count ){
+        if(_obj.tabs_data.already_opened.length < _obj.tabs_data.max_count ){
             //если эта конференция еще не открыта
-            if(_obj.tabs_data.already_opened.indexOf(conference_pk) == -1){
+            if( !_obj.tabs_data.is_already_opened(conference_pk) ){
+                
+                _obj.tabs_data.already_opened.push(conference_pk);
+                
                 var tab = $(
                     '<li role="presentation" class="active">'+
                     '<a href="#'+conference_pk+'" aria-controls="home" role="tab" data-toggle="tab" data-id="'+conference_pk+'">' + tab_name +
                     '</a>'+
                     '</li>'
                 );
-
+                
                 var tabpanel = $(
                     '<div role="tabpanel" class="tab-pane active" id="'+ conference_pk +'" style="height: calc(100vh - 225px);overflow-y: auto;"></div>'
                 );
-
+                
                 var userpanel = $(
                     '<div class="panel panel-primary hidden-xs" id="members-panel-' + conference_pk + '">' +
                     '<div class="panel-heading">Участники конференции</div>'+
@@ -272,28 +277,27 @@ function ChatGUI(_serverAPI) {
                 _obj.GUIElements.tabs_container.append(tab);
                 _obj.GUIElements.tabpanels_container.append(tabpanel);
                 _obj.GUIElements.active_user_panels_container.append(userpanel);
-
-                _obj.tabs_data.already_opened.push(conference_pk);
-                _obj.tabs_data.current_count++;
             }else{
                 //эта конференция уже открыта, по этому тут ничего не делаем
                 return;
             }
         //лимит вкладок исчерпан - открываем вкладку вместо текущей активной
         }else{
-            var tab = _obj.GUIElements.tabs_container.find('a[href="#'+_obj.tabs_data.active_tab_id+'"]');
-            tab.attr('href', '#'+conference_pk);
-            tab.text(tab_name); 
-            
-            var tabpanel = _obj.GUIElements.tabpanels_container.find('#' + _obj.tabs_data.active_tab_id);
-            tabpanel.attr('id', conference_pk);
-            tabpanel.html('');
-            
-            var userpanel = _obj.GUIElements.active_user_panels_container.find('#members-panel-' + _obj.tabs_data.active_tab_id);
-            userpanel.attr('id', 'members-panel-' + conference_pk);
-            userpanel.find('ul').html('');
-            
-            _obj.tabs_data.already_opened[_obj.tabs_data.already_opened.indexOf(_obj.tabs_data.active_tab_id)] = conference_pk;
+            if( !_obj.tabs_data.is_already_opened(conference_pk) ){
+                _obj.tabs_data.already_opened[_obj.tabs_data.already_opened.indexOf(_obj.tabs_data.active_tab_id)] = conference_pk;
+                
+                var tab = _obj.GUIElements.tabs_container.find('a[href="#'+_obj.tabs_data.active_tab_id+'"]');
+                tab.attr('href', '#'+conference_pk);
+                tab.text(tab_name); 
+
+                var tabpanel = _obj.GUIElements.tabpanels_container.find('#' + _obj.tabs_data.active_tab_id);
+                tabpanel.attr('id', conference_pk);
+                tabpanel.html('');
+
+                var userpanel = _obj.GUIElements.active_user_panels_container.find('#members-panel-' + _obj.tabs_data.active_tab_id);
+                userpanel.attr('id', 'members-panel-' + conference_pk);
+                userpanel.find('ul').html('');
+            }
         }
         _obj.tabs_data.active_tab_id = conference_pk;
         
@@ -309,17 +313,17 @@ function ChatGUI(_serverAPI) {
             var current_step_number = -1;
             var my_userpanel = _obj.GUIElements.active_user_panels_container.find('#members-panel-' + my_conference_pk).find('ul');
             var bubble = function(){
-                current_step_number = (current_step_number + 1) % _obj.update_information.users_idle_steps_count;
-                if(current_step_number != 0){
-                    setTimeout(bubble, _obj.update_information.timeout);
-                    return;
-                }
-                
-                if( _obj.tabs_data.already_opened.indexOf(my_conference_pk) == -1 ) {
+                if( !_obj.tabs_data.is_already_opened(my_conference_pk) ) {
                     return;
                 }
                 
                 if( _obj.tabs_data.active_tab_id != my_conference_pk ){
+                    setTimeout(bubble, _obj.update_information.timeout);
+                    return;
+                }
+                
+                current_step_number = (current_step_number + 1) % _obj.update_information.users_idle_steps_count;
+                if(current_step_number != 0){
                     setTimeout(bubble, _obj.update_information.timeout);
                     return;
                 }
@@ -331,7 +335,6 @@ function ChatGUI(_serverAPI) {
                     });
                     my_userpanel.html($container.html());
                 });
-                
                 
                 setTimeout(bubble, _obj.update_information.timeout);
             };
@@ -355,13 +358,7 @@ function ChatGUI(_serverAPI) {
             });
             
             var bubble = function(){
-                current_step_number = (current_step_number + 1) % _obj.update_information.message_idle_steps_count;
-                if(current_step_number != 0){
-                    setTimeout(bubble, _obj.update_information.timeout);
-                    return;
-                }
-                
-                if( _obj.tabs_data.already_opened.indexOf(my_conference_pk) == -1 ) {
+                if( !_obj.tabs_data.is_already_opened(my_conference_pk) ) {
                     return;
                 }
                 
@@ -370,17 +367,23 @@ function ChatGUI(_serverAPI) {
                     return;
                 }
                 
+                current_step_number = (current_step_number + 1) % _obj.update_information.message_idle_steps_count;
+                if(current_step_number != 0){
+                    setTimeout(bubble, _obj.update_information.timeout);
+                    return;
+                }
+                
                 _serverAPI.get_messages(my_conference_pk, my_last_message, function(returnedData){
-                    $.each(returnedData, function(index, elem){                        
+                    $.each(returnedData, function(index, elem){
+                        if(my_last_message < elem['time_stamp']){
+                            my_last_message = elem['time_stamp'];
+                        }
+                        
                         if( Object.keys(my_color_schemes_dict).indexOf(elem['sender']) == -1 ){
                             my_color_schemes_dict[elem['sender']] = _obj.tabs_data.color_schemes[Object.keys(my_color_schemes_dict).length % _obj.tabs_data.color_schemes_count];
                         }
                         
                         _obj.GUIFunctions.add_message(elem['sender'], my_color_schemes_dict[elem['sender']], elem['message'], my_conference_pk);
-                        
-                        if(my_last_message < elem['time_stamp']){
-                            my_last_message = elem['time_stamp'];
-                        }
                     });
                 });
                 
@@ -481,7 +484,9 @@ $(document).ready(function(){
             
             _serverAPI.get_new_messages_count(function(new_conferences_pk_list){
                 $.each(new_conferences_pk_list, function(index, elem){
-                    _chatGUI.GUIFunctions.add_conference(_serverAPI.users_dict[elem],elem,_serverAPI.messages_count_dict[elem]);    
+                    if( !_serverAPI.conference_already_added(elem) ){
+                        _chatGUI.GUIFunctions.add_conference(_serverAPI.users_dict[elem],elem,_serverAPI.messages_count_dict[elem]);    
+                    }    
                 });
                 
                 var total_new_messages_count = 0;
@@ -513,3 +518,4 @@ $(document).ready(function(){
     $("#conference-create-multiselect").trigger("chosen:updated");
 
 });
+//todo: проблема с установкой active_tab_id
