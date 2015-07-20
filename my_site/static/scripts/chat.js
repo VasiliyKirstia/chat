@@ -242,6 +242,8 @@ function ChatGUI(_serverAPI) {
     
     //добавляет вкладку с id равным conference_pk и панель участников с id равным members-panel-[conference_pk]
     _obj.GUIFunctions.add_tab = function(tab_name, conference_pk){
+        //флаг позволяющий определить нужно ли запускать пузырь для этой конференции
+        var booble_already_created = false;
         //если не исчерпан лимит одновременно открытых вкладок
         if(_obj.tabs_data.already_opened.length < _obj.tabs_data.max_count ){
             //если эта конференция еще не открыта
@@ -277,16 +279,21 @@ function ChatGUI(_serverAPI) {
                 _obj.GUIElements.tabs_container.append(tab);
                 _obj.GUIElements.tabpanels_container.append(tabpanel);
                 _obj.GUIElements.active_user_panels_container.append(userpanel);
+                
+                _obj.tabs_data.active_tab_id = conference_pk;
             }else{
                 //эта конференция уже открыта, по этому тут ничего не делаем
+                booble_already_created = true;
                 return;
             }
-        //лимит вкладок исчерпан - открываем вкладку вместо текущей активной
+        //лимит вкладок исчерпан
         }else{
+            //если вкладка еще не открыта то открываем её вместо текущей активной
             if( !_obj.tabs_data.is_already_opened(conference_pk) ){
                 _obj.tabs_data.already_opened[_obj.tabs_data.already_opened.indexOf(_obj.tabs_data.active_tab_id)] = conference_pk;
                 
                 var tab = _obj.GUIElements.tabs_container.find('a[href="#'+_obj.tabs_data.active_tab_id+'"]');
+                tab.attr('data-id', conference_pk);
                 tab.attr('href', '#'+conference_pk);
                 tab.text(tab_name); 
 
@@ -297,9 +304,14 @@ function ChatGUI(_serverAPI) {
                 var userpanel = _obj.GUIElements.active_user_panels_container.find('#members-panel-' + _obj.tabs_data.active_tab_id);
                 userpanel.attr('id', 'members-panel-' + conference_pk);
                 userpanel.find('ul').html('');
+                
+                _obj.tabs_data.active_tab_id = conference_pk;
+            }else{
+                //конференция уже открыта
+                booble_already_created = true;
             }
         }
-        _obj.tabs_data.active_tab_id = conference_pk;
+        
         
         /*
         *   Фабрика пузырей для обновления информации о участниках конференции.
@@ -309,6 +321,11 @@ function ChatGUI(_serverAPI) {
         *   Как только вкладка закрывается пузырь перестает существовать.
         */
         (function(){
+            //если вкладка уже открыта то для нее уже создан пузырь
+            if(booble_already_created){
+                return;
+            }
+            
             var my_conference_pk = conference_pk;
             var current_step_number = -1;
             var my_userpanel = _obj.GUIElements.active_user_panels_container.find('#members-panel-' + my_conference_pk).find('ul');
@@ -349,6 +366,11 @@ function ChatGUI(_serverAPI) {
         *   Как только вкладка закрывается пузырь перестает существовать.
         */
         (function(){
+            //если вкладка уже открыта то для нее уже создан пузырь
+            if(booble_already_created){
+                return;
+            }
+            
             var current_step_number = -1;
             var my_conference_pk = conference_pk;
             var my_last_message = 0;
@@ -518,4 +540,4 @@ $(document).ready(function(){
     $("#conference-create-multiselect").trigger("chosen:updated");
 
 });
-//todo: проблема с установкой active_tab_id
+//todo: проблема с установкой active_tab_id, проблема с открытием конференций во вкладках, проблема с переключением вкладок.
