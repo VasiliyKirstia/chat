@@ -20,7 +20,8 @@ class Conference(models.Model):
 
         for session in sessions:
             data = session.get_decoded()
-            active_uid_list.append(data.get('_auth_user_id', None))
+            active_uid_list.append(int(data.get('_auth_user_id', None)))
+
         return [[link.user.username, True if link.user.pk in active_uid_list else False] for link in links]
 
     def get_new_messages(self, user):

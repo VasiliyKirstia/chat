@@ -506,9 +506,7 @@ $(document).ready(function(){
             
             _serverAPI.get_new_messages_count(function(new_conferences_pk_list){
                 $.each(new_conferences_pk_list, function(index, elem){
-                    if( !_serverAPI.conference_already_added(elem) ){
-                        _chatGUI.GUIFunctions.add_conference(_serverAPI.users_dict[elem],elem,_serverAPI.messages_count_dict[elem]);    
-                    }    
+                        _chatGUI.GUIFunctions.add_conference(_serverAPI.users_dict[elem],elem,_serverAPI.messages_count_dict[elem]);       
                 });
                 
                 var total_new_messages_count = 0;
