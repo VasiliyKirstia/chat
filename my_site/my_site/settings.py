@@ -79,8 +79,12 @@ WSGI_APPLICATION = 'my_site.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'database/site_db.sqlite3'),
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'chat_db',
+        'USER': 'username',
+        'PASSWORD': 'password',
+        'HOST': 'localhost',
+        'PORT': '',
     },
     'research_db': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -119,4 +123,21 @@ STATIC_URL = '/static/'
 LOGIN_URL = '/'
 
 # sessions
-SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+
+SESSION_ENGINE = 'redis_sessions.session'
+
+SESSION_REDIS_PORT = 6379
+SESSION_REDIS_DB = 0
+#SESSION_REDIS_PASSWORD = 'very_strong_password'
+SESSION_REDIS_PREFIX = 'session'
+
+#redis
+REDIS_HOST = 'localhost'
+REDIS_PORT = 6379
+REDIS_DB = 0
+REDIS_PASSWORD = None
+REDIS_SOCKET_TIMEOUT = None
+REDIS_CONNECTION_POOL = None
+REDIS_CHARSET = 'utf-8'
+REDIS_ERRORS = 'strict'
+REDIS_UNIX_SOCKET_PATH = None

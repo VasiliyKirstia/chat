@@ -13,17 +13,6 @@ class Conference(models.Model):
     def get_members_names(self, user):
         return [_user.username for _user in self.users_set.all().exclude(pk=user.pk)]
 
-    def get_members_names_with_status(self):
-        active_uid_list = []
-        sessions = Session.objects.filter(expire_date__gte=timezone.now())
-        links = ConferenceUserLink.objects.filter(conference=self)
-
-        for session in sessions:
-            data = session.get_decoded()
-            active_uid_list.append(int(data.get('_auth_user_id', None)))
-
-        return [[link.user.username, True if link.user.pk in active_uid_list else False] for link in links]
-
     def get_new_messages(self, user):
         last_message_time_stamp = ConferenceUserLink.objects.get(conference=self, user=user).last_message_date
         new_messages = Message.objects.filter(conference=self, time_stamp__gt=last_message_time_stamp)
@@ -43,12 +32,16 @@ class Conference(models.Model):
             for_remove.delete()
         if self.users_set.count() == 0:
             self.delete()
+            return True
+        return False
 
     def add_message(self, sender, message):
+        timestamp = timezone.now().timestamp()
         Message.objects.create(conference=self,
                                sender=sender,
                                message=escape(message),
-                               time_stamp=timezone.now().timestamp())
+                               time_stamp=timestamp)
+        return timestamp
 
 
 class ConferenceUserLink(models.Model):
