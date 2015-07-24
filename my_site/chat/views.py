@@ -50,7 +50,6 @@ def init(request):
                 'pk': conf.pk,
                 'users': conf.get_members_names(request.user),
                 'messages_count': conf.get_new_messages_count(request.user),
-                'last_message_ts': ConferenceUserLink.objects.get(conference=conf, user=request.user).last_message_date
             }
         )
 
@@ -80,8 +79,14 @@ def connect(request):
     link.last_message_date = conference.messages.objects.latest('time_stamp').time_stamp
     link.save()
 
+    _redis.publish("u-{u_name}".format(u_name=request.user.username), json.dumps(
+        {
+            'action': 'open',
+            'channel': "c-{conf_id}".format(conf_id=conference.pk),
+        }
+    ))
+
     return JsonResponse({
-        'action': 'connect',
         'conference_pk': conference_pk,
         'message_list': [{
                              'sender': message.sender,
@@ -105,6 +110,7 @@ def create_conference(request):
         raise Http404()
 
     username_list = json.loads(username_list)
+    username_list.append(request.user.username)
 
     _conference = Conference()
     _conference.save()
@@ -123,6 +129,7 @@ def create_conference(request):
             {
                 'action': 'conference',
                 'conference_pk': _conference.pk,
+                'messages_count': 1,
                 'username_list': username_list,
             }
         ))
@@ -176,8 +183,16 @@ def leave(request):
         _redis.publish("c-{conf_id}".format(conf_id=conference.pk), json.dumps(
             {
                 'action': 'leave',
+                'conference_pk': conference.pk,
                 'username': request.user.username,
             }
         ))
+
+    _redis.publish("u-{u_name}".format(u_name=request.user.username), json.dumps(
+        {
+            'action': 'close',
+            'channel': "c-{conf_id}".format(conf_id=conference.pk),
+        }
+    ))
 
     return HttpResponse('')

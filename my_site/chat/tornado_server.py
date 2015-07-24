@@ -1,11 +1,12 @@
 from tornado.web import RequestHandler, Application, url
-from tornado.gen import coroutine, Task
+from tornado.gen import coroutine, Task, engine
 from tornado.httpclient import AsyncHTTPClient
 from sockjs.tornado import SockJSConnection
 from tornadoredis.pubsub import SockJSSubscriber
 from tornadoredis import Client
 from my_site import settings
 
+import json
 import django
 from django.utils.importlib import import_module
 from django.conf import settings as csettings
@@ -28,12 +29,9 @@ def get_user(session):
 
 
 class MainHandler(RequestHandler):
-    @coroutine
     def get(self):
-        http = AsyncHTTPClient()
-        response = yield http.fetch(url)
-
         self.write("Привет из Торнадо!")
+
 
 class ChatWSConnectionHandler(SockJSConnection):
     def __init__(self, *args, **kwargs):
@@ -43,10 +41,6 @@ class ChatWSConnectionHandler(SockJSConnection):
         self.django_user = None
         self.django_session = None
 
-        self.setup_listener()
-
-    @coroutine
-    def setup_listener(self):
         self.redis_client = Client(
             host=getattr(settings, 'REDIS_HOST', 'localhost'),
             port=getattr(settings, 'REDIS_PORT', 6379),
@@ -55,28 +49,45 @@ class ChatWSConnectionHandler(SockJSConnection):
             unix_socket_path=getattr(settings, 'REDIS_UNIX_SOCKET_PATH', None)
         )
 
-        yield Task(
-            self.redis_client
-        )
-
+    @coroutine
     def on_open(self, info):
         self.django_session = get_session(info.get_cookie('sessionid').value)
         self.django_user = get_user(self.django_session)
 
+        _online_users_list.append(self.django_user)
+
         self.redis_client.connect()
-        self.redis_client.subscribe()
-        self.subscription.subscribe("u-{u_name}".format(u_name=self.django_user.username), self)
-        self.subscription.on_message()
+        yield Task(self.redis_client.subscribe, "u-{u_name}".format(u_name=self.django_user.username))
+        self.redis_client.listen(self.on_redis_message)
 
     def on_message(self, message):
-        # Broadcast message
-        self.broadcast(self.participants, message)
+        command = json.loads(message)
+
+        if command == 'get_users_online':
+            self.send(json.dumps(_online_users_list))
 
     def on_close(self):
-        # Remove client from the clients list and broadcast leave message
-        self.participants.remove(self)
+        _online_users_list.remove(self.django_user)
 
-        self.broadcast(self.participants, "Someone left.")
+    @coroutine
+    def on_redis_message(self, msg):
+        if msg.kind == 'message':
+            message = json.loads(msg.body)
+
+            if message['action'] == 'message':
+                self.send(msg.body)
+
+            elif message['action'] == 'open':
+                yield Task(self.redis_client.subscribe, message['channel'])
+
+            elif message['action'] == 'conference':
+                self.send(msg.body)
+
+            elif message['action'] == 'close':
+                yield Task(self.redis_client.unsubscribe, message['channel'])
+
+            elif message['action'] == 'leave':
+                self.send(msg.body)
 
 
 application = Application([
