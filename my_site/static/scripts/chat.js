@@ -431,7 +431,7 @@ $(document).ready(function(){
     
     //открытие конференции во вкладке
     _chatGUI.GUIElements.conferences_container.on('click', 'a.badge', function(eventObj){
-        var conference_pk = parseInt(eventObj.target.dataset.id);
+        var conference_pk = parseInt( $(eventObj.currentTarget).data('id') );
         var tab_name = _serverAPI.users_dict[conference_pk].length > 0 ? _serverAPI.users_dict[conference_pk].join(', ') : '*пустая*';       
         _chatGUI.GUIFunctions.add_tab(tab_name, conference_pk);
     });
@@ -439,7 +439,7 @@ $(document).ready(function(){
     //переключение вкладок
     _chatGUI.GUIElements.tabs_container.on('click', 'a', function(eventObj){
         _chatGUI.GUIElements.active_user_panels_container.find('#members-panel-' + _chatGUI.tabs_data.active_tab_id).addClass('hide');
-        _chatGUI.tabs_data.active_tab_id = parseInt(eventObj.target.dataset.id);
+        _chatGUI.tabs_data.active_tab_id = parseInt( $(eventObj.currentTarget).data('id'));
         _chatGUI.GUIElements.active_user_panels_container.find('#members-panel-' + _chatGUI.tabs_data.active_tab_id).removeClass('hide');
     });
     
@@ -459,6 +459,10 @@ $(document).ready(function(){
         var users_list = _chatGUI.GUIElements.conference_create_multiselect.val();
         var message = (_chatGUI.GUIElements.conference_create_textarea.val()).trim();
         
+        if(users_list === null || message.length == 0){
+            return;
+        }
+        
         _serverAPI.create_conference(users_list, message, function(conference_pk){
             if(conference_pk != undefined){
                 _chatGUI.GUIFunctions.add_conference(_serverAPI.users_dict[conference_pk],conference_pk,_serverAPI.messages_count_dict[conference_pk]);
@@ -470,7 +474,7 @@ $(document).ready(function(){
     
     //удаление конференции
     _chatGUI.GUIElements.conferences_container.on('click', 'button.close', function(eventObj){
-        var conference_pk = parseInt(eventObj.target.dataset.id);
+        var conference_pk = parseInt( $(eventObj.currentTarget).data('id') );
         if( !_serverAPI.conference_already_added(conference_pk) ){
             return;
         }
