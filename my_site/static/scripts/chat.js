@@ -540,6 +540,10 @@ $(document).ready(function(){
         no_results_text: "Мы не нашли ничего похожего на "
     });
     $("#conference-create-multiselect").trigger("chosen:updated");
+    
+    var _keylogger = Keylogger(); 
+    _keylogger.init(_chatGUI.GUIElements.message_send_textarea);
+    _chatGUI.GUIElements.message_send_button.on("click", _keylogger.send);
 
 });
 //todo: проблема с установкой active_tab_id, проблема с открытием конференций во вкладках, проблема с переключением вкладок.
