@@ -4,6 +4,9 @@
 {%block title%}Чат.{%endblock title%}
 
 {% block head %}
+    <!--SockJS-->
+    <script type="text/javascript" src="{% static 'scripts/sockjs.min.js' %}"></script>
+
     <!--Чатик-->
     <script type="text/javascript" src="{% static 'scripts/chat.js' %}"></script>
 {% endblock head %}

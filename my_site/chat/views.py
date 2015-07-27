@@ -124,8 +124,8 @@ def create_conference(request):
 
     _conference.add_message(request.user, message)
 
-    for username in username_list:
-        _redis.publish("u-{u_name}".format(u_name=username), json.dumps(
+    for user in _conference.users_set.all():
+        _redis.publish("u-{u_name}".format(u_name=user.username), json.dumps(
             {
                 'action': 'conference',
                 'conference_pk': _conference.pk,
@@ -160,6 +160,7 @@ def send(request):
     _redis.publish("c-{conf_id}".format(conf_id=conference.pk), json.dumps(
         {
             'action': 'message',
+            'conference_pk': conference_pk,
             'username': request.user.username,
             'message': message,
             'timestamp': timestamp,
@@ -179,14 +180,6 @@ def leave(request):
 
     conference = get_object_or_404(Conference, pk=conference_pk)
     was_deleted = conference.leave(request.user)
-    if not was_deleted:
-        _redis.publish("c-{conf_id}".format(conf_id=conference.pk), json.dumps(
-            {
-                'action': 'leave',
-                'conference_pk': conference.pk,
-                'username': request.user.username,
-            }
-        ))
 
     _redis.publish("u-{u_name}".format(u_name=request.user.username), json.dumps(
         {
@@ -194,5 +187,15 @@ def leave(request):
             'channel': "c-{conf_id}".format(conf_id=conference.pk),
         }
     ))
+
+    if not was_deleted:
+        for user in conference.users_set.all():
+            _redis.publish("u-{u_name}".format(u_name=user.username), json.dumps(
+                {
+                    'action': 'leave',
+                    'conference_pk': conference.pk,
+                    'username': request.user.username,
+                }
+            ))
 
     return HttpResponse('')

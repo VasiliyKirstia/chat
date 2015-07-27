@@ -1,7 +1,7 @@
 from tornado.web import RequestHandler, Application, url
 from tornado.gen import coroutine, Task, engine
 from tornado.httpclient import AsyncHTTPClient
-from sockjs.tornado import SockJSConnection
+from sockjs.tornado import SockJSConnection, SockJSRouter
 from tornadoredis.pubsub import SockJSSubscriber
 from tornadoredis import Client
 from my_site import settings
@@ -30,14 +30,15 @@ def get_user(session):
 
 class MainHandler(RequestHandler):
     def get(self):
+        print('\nget\n')
         self.write("Привет из Торнадо!")
 
 
 class ChatWSConnectionHandler(SockJSConnection):
     def __init__(self, *args, **kwargs):
+        print('\ninit\n')
         super(ChatWSConnectionHandler, self).__init__(*args, **kwargs)
 
-        self.redis_client = None
         self.django_user = None
         self.django_session = None
 
@@ -51,6 +52,7 @@ class ChatWSConnectionHandler(SockJSConnection):
 
     @coroutine
     def on_open(self, info):
+        print('\nonopen\n')
         self.django_session = get_session(info.get_cookie('sessionid').value)
         self.django_user = get_user(self.django_session)
 
@@ -61,12 +63,14 @@ class ChatWSConnectionHandler(SockJSConnection):
         self.redis_client.listen(self.on_redis_message)
 
     def on_message(self, message):
+        print('\nonmessage\n')
         command = json.loads(message)
 
         if command == 'get_users_online':
             self.send(json.dumps(_online_users_list))
 
     def on_close(self):
+        print('\nonclose\n')
         _online_users_list.remove(self.django_user)
 
     @coroutine
@@ -89,7 +93,6 @@ class ChatWSConnectionHandler(SockJSConnection):
             elif message['action'] == 'leave':
                 self.send(msg.body)
 
+ChatRouter = SockJSRouter(ChatWSConnectionHandler, '/chat')
 
-application = Application([
-    url(r"/", MainHandler),
-])
+application = Application(ChatRouter.urls)
