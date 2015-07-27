@@ -1,0 +1,6 @@
+/my_site/my_site/setings.py
+/my_site/.idea/
+/my_site/database/
+**/__pycache__/
+
+*~
