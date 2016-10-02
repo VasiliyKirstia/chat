@@ -1,6 +1,5 @@
-/my_site/my_site/setings.py
-/my_site/.idea/
-/my_site/database/
-**/__pycache__/
+.idea/
+.enviroment/
 
-*~
+#backend
+**/__pycache__/
