@@ -8,4 +8,3 @@
 * PostgreSQL
 
 #REQUIREMENTS
-* psycog

@@ -1,5 +1,5 @@
 django==1.10
-djangorestframework==3
+djangorestframework==3.4
 markdown
 django-filter
 pika
